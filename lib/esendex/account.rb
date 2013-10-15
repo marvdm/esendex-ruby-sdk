@@ -47,5 +47,56 @@ module Esendex
       doc.at_xpath('//api:messageheaders', 'api' => Esendex::API_NAMESPACE)['batchid']
     end
 
+
+    def retrieve_message(message_id)
+      response = api_connection.get "/v1.0/messageheaders/#{message_id}"
+
+      begin
+        doc = Nokogiri::XML(response.body)
+        { reference: doc.at('reference').text,
+          sentat: doc.at('sentat').text,
+          laststatusat: doc.at('laststatusat').text,
+          submittedat: doc.at('submittedat').text,
+          type: doc.at('type').text,
+          status: doc.at('status').text,
+          to: doc.at('to phonenumber').text,
+          from: doc.at('from phonenumber').text,
+          direction: doc.at('direction').text,
+          parts: doc.at('parts').text }
+      rescue Esendex::ApiError => e
+        e.to_s.match(/Response message = (.+)$/)[1]
+      rescue StandardError => e
+        'Standard error'
+      end
+    end
+
+
+    def retrieve_messages
+      response = api_connection.get "/v1.0/messageheaders"
+
+      begin
+        doc = Nokogiri::XML(response.body)
+        message_headers = doc.at('messageheaders').css('messageheader')
+
+        messages = message_headers.map do |m|
+          { id:           m.attr('id'),
+            reference:    m.at('reference').text,
+            status:       m.at('status').text,
+            sentat:       m.at('sentat').text,
+            laststatusat: m.at('laststatusat').text,
+            submittedat:  m.at('submittedat').text,
+            type:         m.at('type').text,
+            to:           m.at('to phonenumber').text,
+            from:         m.at('from phonenumber').text,
+            direction:    m.at('direction').text,
+            parts:        m.at('parts').text }
+        end
+      rescue Esendex::ApiError => e
+        return e.to_s
+      rescue StandardError => e
+        'Standard error'
+      end
+    end
+
   end
 end
