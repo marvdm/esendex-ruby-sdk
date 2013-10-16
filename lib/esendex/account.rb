@@ -53,16 +53,16 @@ module Esendex
 
       begin
         doc = Nokogiri::XML(response.body)
-        { reference: doc.at('reference').text,
-          sentat: doc.at('sentat').text,
-          laststatusat: doc.at('laststatusat').text,
-          submittedat: doc.at('submittedat').text,
-          type: doc.at('type').text,
-          status: doc.at('status').text,
-          to: doc.at('to phonenumber').text,
-          from: doc.at('from phonenumber').text,
-          direction: doc.at('direction').text,
-          parts: doc.at('parts').text }
+        { reference: doc.at('reference').try(:text),
+          sentat: doc.at('sentat').try(:text),
+          laststatusat: doc.at('laststatusat').try(:text),
+          submittedat: doc.at('submittedat').try(:text),
+          type: doc.at('type').try(:text),
+          status: doc.at('status').try(:text),
+          to: doc.at('to phonenumber').try(:text),
+          from: doc.at('from phonenumber').try(:text),
+          direction: doc.at('direction').try(:text),
+          parts: doc.at('parts').try(:text) }
       rescue Esendex::ApiError => e
         e.to_s.match(/Response message = (.+)$/)[1]
       rescue StandardError => e
@@ -80,21 +80,21 @@ module Esendex
 
         messages = message_headers.map do |m|
           { id:           m.attr('id'),
-            reference:    m.at('reference').text,
-            status:       m.at('status').text,
-            sentat:       m.at('sentat').text,
-            laststatusat: m.at('laststatusat').text,
-            submittedat:  m.at('submittedat').text,
-            type:         m.at('type').text,
-            to:           m.at('to phonenumber').text,
-            from:         m.at('from phonenumber').text,
-            direction:    m.at('direction').text,
-            parts:        m.at('parts').text }
+            reference:    m.at('reference').try(:text),
+            status:       m.at('status').try(:text),
+            sentat:       m.at('sentat').try(:text),
+            laststatusat: m.at('laststatusat').try(:text),
+            submittedat:  m.at('submittedat').try(:text),
+            type:         m.at('type').try(:text),
+            to:           m.at('to phonenumber').try(:text),
+            from:         m.at('from phonenumber').try(:text),
+            direction:    m.at('direction').try(:text),
+            parts:        m.at('parts').try(:text) }
         end
       rescue Esendex::ApiError => e
-        return e.to_s
+        e.to_s
       rescue StandardError => e
-        'Standard error'
+        e.to_s
       end
     end
 
